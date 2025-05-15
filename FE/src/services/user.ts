@@ -1,5 +1,11 @@
 import instance from "../utils/request";
-import { IContact, IUser, IUserUpdate } from "../types/user";
+import {
+  IContact,
+  ISearchFiltersResponse,
+  IUser,
+  IUserUpdate,
+  SearchFilters,
+} from "../types/user";
 
 export const apiGetUsers = async (): Promise<IUser[]> => {
   const res = await instance.get("/users");
@@ -27,5 +33,19 @@ export const apiUpdateUser = async (data: FormData): Promise<IUserUpdate> => {
       "Content-Type": "multipart/form-data",
     },
   });
+  return res.data;
+};
+
+export const apiSearchUser = async (
+  filters: SearchFilters
+): Promise<ISearchFiltersResponse> => {
+  const res = await instance.get("/users/search", {
+    params: filters,
+  });
+  return res.data;
+};
+
+export const apiGetSuggestedUsers = async (): Promise<IUser[]> => {
+  const res = await instance.get("/users/suggestions");
   return res.data;
 };

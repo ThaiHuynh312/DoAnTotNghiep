@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { createPost, getAllPosts, getMyPosts, getPostsUser, updatePost, deletePost, likePost } = require("../controllers/postController");
 const authenticate = require("../middleware/auth");
-const upload = require("../middleware/upload"); 
+const {upload} = require("../middleware/upload"); 
 
 router.post("/", authenticate, upload.array("images", 10), createPost);
 router.get("/user/:userId", authenticate, getPostsUser);

@@ -120,8 +120,8 @@ const Chatpage = () => {
   }, []);
 
   return (
-    <div className="w-screen mt-12">
-      <div className="flex  flex-1 h-[calc(100vh-60px)]">
+    <div className="">
+      <div className="flex flex-1 h-screen">
         <Chatlist contacts={contacts} />
         <div className="flex flex-col flex-1">
           <div className="h-13 shadow-sm">

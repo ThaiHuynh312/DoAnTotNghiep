@@ -1,11 +1,13 @@
 import { IContact } from "../types/user";
 import ava from "../assets/img/avatar.jpg";
 import dayjs from "dayjs";
+import "dayjs/locale/vi";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
 dayjs.extend(relativeTime);
+dayjs.locale("vi");
 
 export interface ChatItem {
   id: number;

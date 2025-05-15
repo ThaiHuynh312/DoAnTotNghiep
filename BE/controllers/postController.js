@@ -1,3 +1,4 @@
+const { deleteFromCloudinary } = require("../middleware/upload");
 const Post = require("../models/Post");
 
 exports.createPost = async (req, res) => {
@@ -77,37 +78,82 @@ exports.getAllPosts = async (req, res) => {
     }
   };
 
-  exports.updatePost = async (req, res) => {
-    try {
-      const userId = req.user._id;
-      const postId = req.params.id;
-      const { content } = req.body;
-      const images = req.files?.map(file => file.path) || [];
+  // exports.updatePost = async (req, res) => {
+  //   try {
+  //     const userId = req.user._id;
+  //     const postId = req.params.id;
+  //     const { content } = req.body;
+  //     const images = req.files?.map(file => file.path) || [];
   
-      const post = await Post.findById(postId);
+  //     const post = await Post.findById(postId);
   
-      if (!post) {
-        return res.status(404).json({ message: "Post not found" });
-      }
+  //     if (!post) {
+  //       return res.status(404).json({ message: "Post not found" });
+  //     }
   
-      if (!post.creator.equals(userId)) {
-        return res.status(403).json({ message: "Unauthorized to update this post" });
-      }
+  //     if (!post.creator.equals(userId)) {
+  //       return res.status(403).json({ message: "Unauthorized to update this post" });
+  //     }
   
-      if (content) post.content = content;
-      if (images.length > 0) post.images = images;
+  //     if (content) post.content = content;
+  //     if (images.length > 0) post.images = images;
   
-      await post.save();
+  //     await post.save();
   
-      res.status(200).json({
-        message: "Post updated successfully",
-        post
-      });
-    } catch (error) {
-      console.error("Error updating post:", error);
-      res.status(500).json({ message: "Server error" });
+  //     res.status(200).json({
+  //       message: "Post updated successfully",
+  //       post
+  //     });
+  //   } catch (error) {
+  //     console.error("Error updating post:", error);
+  //     res.status(500).json({ message: "Server error" });
+  //   }
+  // };
+exports.updatePost = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const postId = req.params.id;
+    const { content } = req.body;
+
+    const keptImages = Array.isArray(req.body.keptImages)
+      ? req.body.keptImages
+      : req.body.keptImages
+      ? [req.body.keptImages] // nếu chỉ 1 ảnh giữ lại
+      : [];
+
+    const newImages = req.files?.map(file => file.path) || [];
+
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
     }
-  };
+
+    if (!post.creator.equals(userId)) {
+      return res.status(403).json({ message: "Unauthorized to update this post" });
+    }
+
+    // Optional: Xóa ảnh cũ không nằm trong keptImages
+    const imagesToDelete = post.images.filter(img => !keptImages.includes(img));
+    for (const img of imagesToDelete) {
+      await deleteFromCloudinary(img); // nếu có dùng cloudinary
+    }
+
+    // Cập nhật
+    if (content) post.content = content;
+    post.images = [...keptImages, ...newImages];
+
+    await post.save();
+
+    res.status(200).json({
+      message: "Post updated successfully",
+      post
+    });
+  } catch (error) {
+    console.error("Error updating post:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
   exports.deletePost = async (req, res) => {
     try {

@@ -8,11 +8,13 @@ import deleteicon from "../assets/img/delete.svg";
 import { Link } from "react-router-dom";
 import relativeTime from "dayjs/plugin/relativeTime";
 import dayjs from "dayjs";
+import "dayjs/locale/vi";
 import { ILikePost, IPost } from "@/types/post";
 import { useState } from "react";
 import { apiDeletePost, apiLikePost } from "@/services/post";
 import { useUser } from "@/contexts/UserContext";
 dayjs.extend(relativeTime);
+dayjs.locale("vi");
 
 const Post: React.FC<{
   post: IPost;

@@ -44,7 +44,8 @@ const Header = () => {
         </Link>
         <nav className="flex justify-end items-center space-x-2">
           <div className="h-9 w-9 p-2 bg-[--color4] hover:bg-white hover:shadow-glow transition rounded-full flex justify-center items-center cursor-pointer">
-            <img src={search} alt="Search" />
+            <Link to={`/search`}><img src={search} alt="Search" /></Link>
+            
           </div>
           <div className="h-9 w-9 p-2 rounded-full bg-[--color4] hover:bg-white hover:shadow-glow transition flex justify-center items-center cursor-pointer">
             <Link to="/chat">
@@ -57,8 +58,6 @@ const Header = () => {
           <div
             className="relative h-9 w-9  rounded-full "
             onClick={() => setIsOpen(!isOpen)}
-            // tabIndex={0}
-            // onBlur={() => setIsOpen(false)}
           >
             <img
               src={user?.avatar || ava}

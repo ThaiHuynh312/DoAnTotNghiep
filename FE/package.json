@@ -15,6 +15,7 @@
     "@material-tailwind/react": "^2.1.10",
     "@radix-ui/react-slot": "^1.0.2",
     "axios": "^1.8.1",
+    "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "dayjs": "^1.11.13",

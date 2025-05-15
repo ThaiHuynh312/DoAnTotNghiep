@@ -12,10 +12,19 @@ export interface IUser {
   updatedAt?: string;
   bio?: string;
   phone?: string;
-  address?: string;
   gender?: "male" | "female" | "other" | "";
   birthday?: string;
   role?: "student" | "tutor";
+  address: IAddress;
+  backgroundImage?: string;
+  grades?: string[];
+  subjects?: string[];
+}
+
+export interface IAddress {
+  name: string;
+  lng: number;
+  lat: number;
 }
 
 export interface IContact {
@@ -34,7 +43,22 @@ export interface IUpdateUser {
   gender?: "male" | "female" | "other" | "";
   bio?: string;
   phone?: string;
-  address?: string;
+  address: IAddress;
   birthday?: string;
   role?: "student" | "tutor";
+  backgroundImage?: string;
+  grades?: string[];
+  subjects?: string[];
+}
+
+export interface ISearchFiltersResponse {
+  users: IUser[];
+}
+
+export interface SearchFilters {
+  username?: string;
+  address?: string;
+  grade?: string;
+  subject?: string;
+  gender?: string;
 }

@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   MapContainer,
   TileLayer,
   Marker,
   Popup,
-  Polyline,
+  useMapEvents,
 } from "react-leaflet";
 import { Icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -15,57 +15,79 @@ const markerIcon = new Icon({
   iconAnchor: [12, 41],
 });
 
-type Tutor = {
-  id: string;
-  name: string;
-  lat: number;
-  lng: number;
-  distanceKm: number;
+// Component để xử lý click vào map và lưu tọa độ
+const ClickHandler = ({
+  setClickedLatLng,
+}: {
+  setClickedLatLng: (coords: { lat: number; lng: number }) => void;
+}) => {
+  useMapEvents({
+    click(e) {
+      setClickedLatLng({ lat: e.latlng.lat, lng: e.latlng.lng });
+    },
+  });
+  return null;
 };
 
-type Props = {
-  userLat: number;
-  userLng: number;
-  nearbyTutors: Tutor[]; // top 3 người gần nhất
-};
+interface MapViewProps {
+  value?: { lat: number; lng: number };
+  onChange: (coords: { lat: number; lng: number }) => void;
+}
 
-const MapView: React.FC<Props> = ({ userLat, userLng, nearbyTutors }) => {
+const MapView: React.FC<MapViewProps> = ({ value, onChange }) => {
+  const [userLat, setUserLat] = useState<number | null>(null);
+  const [userLng, setUserLng] = useState<number | null>(null);
+  console.log("value", value);
+
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLat(position.coords.latitude);
+          setUserLng(position.coords.longitude);
+        },
+        () => {
+          setUserLat(10.7769);
+          setUserLng(106.7009);
+        }
+      );
+    } else {
+      setUserLat(10.7769);
+      setUserLng(106.7009);
+    }
+  }, []);
+
+  if (userLat === null || userLng === null) {
+    return (
+      <div className="text-center mt-4 text-white">
+        Đang lấy vị trí của bạn...
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full h-[500px] rounded-lg overflow-hidden shadow-md">
+    <div style={{ position: "relative", height: "100%" }}>
       <MapContainer
-        center={[userLat, userLng]}
-        zoom={13}
-        style={{ height: "100%", width: "100%" }}
+        center={
+          value && value.lat !== 0 ? [value.lat, value.lng] : [userLat, userLng]
+        }
+        zoom={15}
+        style={{
+          height: "100%",
+          width: "100%",
+          borderRadius: "8px",
+          zIndex: 0,
+        }}
       >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-        {/* Marker người dùng */}
-        <Marker position={[userLat, userLng]} icon={markerIcon}>
-          <Popup>Bạn đang ở đây</Popup>
-        </Marker>
+        {value && value.lat !== 0 && value.lng !== 0 && (
+          <Marker position={[value.lat, value.lng]} icon={markerIcon}>
+            <Popup>Tọa độ đã chọn</Popup>
+          </Marker>
+        )}
 
-        {/* Marker các gia sư và vẽ đường nối */}
-        {nearbyTutors.map((tutor) => (
-          <React.Fragment key={tutor.id}>
-            <Marker position={[tutor.lat, tutor.lng]} icon={markerIcon}>
-              <Popup>
-                {tutor.name}
-                <br />
-                Cách bạn: {tutor.distanceKm.toFixed(2)} km
-              </Popup>
-            </Marker>
-            <Polyline
-              positions={[
-                [userLat, userLng],
-                [tutor.lat, tutor.lng],
-              ]}
-              pathOptions={{ color: "blue" }}
-            />
-          </React.Fragment>
-        ))}
+        <ClickHandler setClickedLatLng={onChange} />
       </MapContainer>
     </div>
   );
