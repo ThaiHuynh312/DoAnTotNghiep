@@ -5,10 +5,10 @@
 @layer base {
   :root {
     --color1: #1a1a19;
-    --color2: #5F8B4C;
-    --color3: #859f3d;
-    --color4: #eaebe4;
-    --color5: #f2f4e8;
+    --color2: #01b04f;
+    --color3: #019743;
+    --color4: #e6ebe4;
+    --color5: #eaf4e8;
     --color6: #f2f4ec;
     --color7: #e7ebdd;
 
@@ -81,4 +81,14 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Ẩn thanh cuộn nhưng vẫn cuộn được */
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE và Edge */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
 }

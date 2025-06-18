@@ -58,7 +58,6 @@ const Signup = () => {
         <div className="flex flex-col w-80">
           {error && <p className="text-red-500 mb-2">{error}</p>}
 
-          {/* Username */}
           <div className="relative w-80 mb-6">
             <input
               type="text"
@@ -76,7 +75,6 @@ const Signup = () => {
             </label>
           </div>
 
-          {/* Email */}
           <div className="relative w-80 mb-6">
             <input
               type="email"
@@ -94,7 +92,6 @@ const Signup = () => {
             </label>
           </div>
 
-          {/* Password */}
           <div className="relative w-80 mb-6">
             <input
               type="password"
@@ -112,7 +109,6 @@ const Signup = () => {
             </label>
           </div>
 
-          {/* Confirm Password */}
           <div className="relative w-80 mb-6">
             <input
               type="password"
@@ -130,7 +126,6 @@ const Signup = () => {
             </label>
           </div>
 
-          {/* Submit button */}
           <div
             className="bg-[--color2] text-lg text-white py-2 rounded-lg text-center hover:bg-[--color3] cursor-pointer"
             onClick={handleSignUp}
@@ -139,7 +134,6 @@ const Signup = () => {
           </div>
         </div>
 
-        {/* Have account */}
         <div className="flex gap-4 my-6">
           <span>Bạn đã có tài khoản? </span>
           <Link to={"/login"} className="text-[--color2] hover:text-[--color3]">

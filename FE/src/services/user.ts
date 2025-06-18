@@ -49,3 +49,8 @@ export const apiGetSuggestedUsers = async (): Promise<IUser[]> => {
   const res = await instance.get("/users/suggestions");
   return res.data;
 };
+
+export const apiSearchable = async () => {
+  const res = await instance.put("/users/me/searchable");
+  return res.data;
+};

@@ -22,7 +22,6 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        // theme='dark'
       />
     </ToastContext.Provider>
   )

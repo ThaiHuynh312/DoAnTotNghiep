@@ -4,7 +4,8 @@ import { IUpdateUser } from "@/types/user";
 import React, { useEffect, useState } from "react";
 import closeblack from "../assets/img/CloseBlack.svg";
 import MapView from "./MapView";
-import { resizeImageFunction  } from "@/utils/resizeImage";
+import { resizeImageFunction } from "@/utils/resizeImage";
+import cam from "../assets/img/camera.svg";
 
 interface PostModalProps {
   onClose: () => void;
@@ -28,6 +29,9 @@ const EditProfileForm: React.FC<PostModalProps> = ({
     backgroundImage: "",
     grades: [],
     subjects: [],
+    education: "",
+    experience: "",
+    pricePerHour: undefined,
   });
 
   const [loading, setLoading] = useState(false);
@@ -87,8 +91,10 @@ const EditProfileForm: React.FC<PostModalProps> = ({
       backgroundImage: user?.backgroundImage || "",
       grades: user?.grades || [],
       subjects: user?.subjects || [],
+      education: user?.education || "",
+      experience: user?.experience || "",
+      pricePerHour: user?.pricePerHour || undefined,
     });
-    console.log("formData", formData);
   }, []);
 
   const handleChange = (
@@ -108,7 +114,7 @@ const EditProfileForm: React.FC<PostModalProps> = ({
     if (!file) return;
 
     try {
-      const resized = await resizeImageFunction (file);
+      const resized = await resizeImageFunction(file);
       setAvatarFile(resized);
 
       const preview = URL.createObjectURL(resized);
@@ -117,14 +123,23 @@ const EditProfileForm: React.FC<PostModalProps> = ({
       console.error("Resize ảnh đại diện thất bại:", err);
     }
   };
+  useEffect(() => {
+    setFormData((prev) => ({ ...prev, subjects: selectedSubjects }));
+  }, [selectedSubjects]);
 
+  useEffect(() => {
+    setFormData((prev) => ({ ...prev, grades: selectedGrades }));
+  }, [selectedGrades]);
   const handleBGFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     if (!file) return;
 
     try {
-      const resized = await resizeImageFunction (file);
+      const resized = await resizeImageFunction(file);
       setBackgroundFile(resized);
+
+      const preview = URL.createObjectURL(resized);
+      setBackgroundPreviewUrl(preview);
     } catch (err) {
       console.error("Resize ảnh nền thất bại:", err);
     }
@@ -156,11 +171,14 @@ const EditProfileForm: React.FC<PostModalProps> = ({
     }
     if (backgroundFile) data.append("backgroundImage", backgroundFile);
     if (avatarFile) data.append("avatar", avatarFile);
+    if (formData.education) data.append("education", formData.education);
+    if (formData.experience) data.append("experience", formData.experience);
+    if (formData.pricePerHour != null)
+      data.append("pricePerHour", formData.pricePerHour.toString());
 
     try {
       setLoading(true);
       const res = await apiUpdateUser(data);
-      console.log("Cập nhật thành công:", res);
       setUser(res.updatedUser);
       onEditSuccess?.();
       onClose();
@@ -173,9 +191,17 @@ const EditProfileForm: React.FC<PostModalProps> = ({
 
   const initialAvatarUrl = user?.avatar || "";
   const [previewUrl, setPreviewUrl] = useState<string | null>(initialAvatarUrl);
+  const [backgroundPreviewUrl, setBackgroundPreviewUrl] = useState<
+    string | null
+  >(user?.backgroundImage || "");
 
   const handleRemoveImage = () => {
     setPreviewUrl(initialAvatarUrl);
+  };
+
+  const handleRemoveBGImage = () => {
+    setBackgroundPreviewUrl(user?.backgroundImage || "");
+    setBackgroundFile(null);
   };
 
   useEffect(() => {
@@ -206,57 +232,104 @@ const EditProfileForm: React.FC<PostModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Ảnh đại diện
-            </label>
+          
+          <div className="relative w-full h-fit">
+            {/* Ảnh nền */}
+            <div className="relative w-full h-60 bg-gray-100">
+              {backgroundPreviewUrl ? (
+                <img
+                  src={backgroundPreviewUrl}
+                  alt="Background preview"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-sm text-gray-500">
+                  Không có ảnh nền
+                </div>
+              )}
 
-            {/* Khung avatar */}
-            <div className="relative">
-              <div className="mb-3 flex items-center justify-center">
-                {previewUrl ? (
-                  <div className="relative w-32 h-32">
-                    <img
-                      src={previewUrl}
-                      alt="Avatar preview"
-                      className="w-full h-full object-cover rounded-full border"
-                    />
-                    {previewUrl !== user?.avatar && (
-                      <button
-                        type="button"
-                        onClick={handleRemoveImage}
-                        className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-2 py-1 hover:bg-red-600"
-                      >
-                        Gỡ ảnh
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <div className="w-32 h-32 rounded-full border flex items-center justify-center text-sm text-gray-500">
-                    Không có ảnh
-                  </div>
-                )}
-              </div>
-
-              {/* Input chọn file ảnh */}
-              <div className="absolute bottom-0 left-1/2 flex items-center">
-                <label
-                  htmlFor="file-upload"
-                  className="cursor-pointer px-2 py-1 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition"
+              {/* Nút gỡ ảnh nền */}
+              {backgroundPreviewUrl !== user?.backgroundImage && (
+                <button
+                  type="button"
+                  onClick={handleRemoveBGImage}
+                  className="absolute top-3 right-3 bg-red-500 text-white text-xs rounded-full px-2 py-1 hover:bg-red-600 shadow-md"
                 >
-                  Chọn ảnh
+                  Gỡ ảnh nền
+                </button>
+              )}
+
+              {/* Nút chọn ảnh nền */}
+              <div className="absolute bottom-3 right-3">
+                <label htmlFor="bg-upload" className="cursor-pointer">
+                  <div className="w-10 h-10 flex justify-center items-center rounded-full p-2 bg-[--color2] hover:bg-[--color3]">
+                    <img src={cam} alt="Chọn ảnh nền" className="w-10 h-10 " />
+                  </div>
                 </label>
                 <input
-                  id="file-upload"
+                  id="bg-upload"
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={handleFileChange}
+                  onChange={handleBGFileChange}
                 />
               </div>
             </div>
-          </div>
 
+            {/* Ảnh avatar */}
+            <div className="relative w-full">
+              <div className="absolute -bottom-4 left-20 transform -translate-x-1/2">
+                <div className="relative w-32 h-32 rounded-full border-4 border-white bg-white shadow-md">
+                  {previewUrl ? (
+                    <>
+                      <img
+                        src={previewUrl}
+                        alt="Avatar preview"
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                      {previewUrl !== user?.avatar && (
+                        <button
+                          type="button"
+                          onClick={handleRemoveImage}
+                          className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-2 py-1 hover:bg-red-600 shadow-md"
+                        >
+                          Gỡ
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-sm text-gray-500 rounded-full">
+                      Không có ảnh
+                    </div>
+                  )}
+                </div>
+
+                {/* Nút chọn ảnh avatar */}
+                <div className="absolute bottom-1 left-2/3 flex items-center">
+                  <label htmlFor="file-upload" className="cursor-pointer">
+                    <div className="w-10 h-10 flex justify-center items-center rounded-full p-2 bg-[--color2] hover:bg-[--color3]">
+                      <img
+                        src={cam}
+                        alt="Chọn ảnh nền"
+                        className="w-10 h-10 "
+                      />
+                    </div>
+                  </label>
+                  <input
+                    id="file-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+                </div>
+              </div>
+
+              {/* Đệm để tránh avatar che phần dưới */}
+              <div className="h-16" />
+            </div>
+          </div>
+          
           <div>
             <label className="block text-sm font-medium mb-1">Họ tên</label>
             <input
@@ -267,7 +340,7 @@ const EditProfileForm: React.FC<PostModalProps> = ({
               className="w-full border rounded px-3 py-2"
             />
           </div>
-
+          
           <div>
             <label className="block text-sm font-medium mb-1">Email</label>
             <input
@@ -278,7 +351,7 @@ const EditProfileForm: React.FC<PostModalProps> = ({
               className="w-full border rounded px-3 py-2"
             />
           </div>
-
+          
           <div>
             <label className="block text-sm font-medium mb-1">Vai trò</label>
             <select
@@ -291,7 +364,7 @@ const EditProfileForm: React.FC<PostModalProps> = ({
               <option value="tutor">Gia sư</option>
             </select>
           </div>
-
+          
           <div>
             <label className="block text-sm font-medium mb-1">
               Số điện thoại
@@ -304,7 +377,7 @@ const EditProfileForm: React.FC<PostModalProps> = ({
               className="w-full border rounded px-3 py-2"
             />
           </div>
-
+          
           <div>
             <label className="block text-sm font-medium mb-1">Giới tính</label>
             <select
@@ -319,7 +392,7 @@ const EditProfileForm: React.FC<PostModalProps> = ({
               <option value="other">Khác</option>
             </select>
           </div>
-
+          
           <div>
             <label className="block text-sm font-medium mb-1">Ngày sinh</label>
             <input
@@ -330,9 +403,11 @@ const EditProfileForm: React.FC<PostModalProps> = ({
               className="w-full border rounded px-3 py-2"
             />
           </div>
-
+          
           <div>
-            <label className="block text-sm font-medium mb-1">Môn dạy</label>
+            <label className="block text-sm font-medium mb-1">
+              {formData.role === "tutor" ? "Dạy môn:" : "Học môn"}
+            </label>
             <div className="flex flex-wrap gap-2 mb-2">
               {selectedSubjects.map((subj) => (
                 <span
@@ -352,7 +427,10 @@ const EditProfileForm: React.FC<PostModalProps> = ({
             </div>
           </div>
           {showSubjectPopup && (
-            <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
+            <div
+              className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center"
+              onClick={() => setShowSubjectPopup(false)}
+            >
               <div
                 className="bg-white p-5 rounded-lg w-full max-w-md shadow-lg"
                 onClick={(e) => e.stopPropagation()}
@@ -385,32 +463,14 @@ const EditProfileForm: React.FC<PostModalProps> = ({
                     );
                   })}
                 </div>
-                <div className="flex justify-end gap-2">
-                  <button
-                    className="px-4 py-2 rounded bg-gray-200 text-gray-700"
-                    onClick={() => setShowSubjectPopup(false)}
-                  >
-                    Hủy
-                  </button>
-                  <button
-                    className="px-4 py-2 rounded bg-[--color2] text-white"
-                    onClick={() => {
-                      setFormData((prev) => ({
-                        ...prev,
-                        subjects: selectedSubjects,
-                      }));
-                      setShowSubjectPopup(false);
-                    }}
-                  >
-                    Lưu
-                  </button>
-                </div>
               </div>
             </div>
           )}
-
+          
           <div>
-            <label className="block text-sm font-medium mb-1">Lớp dạy</label>
+            <label className="block text-sm font-medium mb-1">
+              {formData.role === "tutor" ? "Dạy lớp:" : "Học lớp"}
+            </label>
             <div className="flex flex-wrap gap-2 mb-2">
               {selectedGrades.map((cls) => (
                 <span
@@ -429,9 +489,11 @@ const EditProfileForm: React.FC<PostModalProps> = ({
               </button>
             </div>
           </div>
-
           {showClassPopup && (
-            <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
+            <div
+              className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center"
+              onClick={() => setShowClassPopup(false)}
+            >
               <div
                 className="bg-white p-5 rounded-lg w-full max-w-md shadow-lg"
                 onClick={(e) => e.stopPropagation()}
@@ -452,11 +514,18 @@ const EditProfileForm: React.FC<PostModalProps> = ({
                             : "bg-gray-100 text-gray-800"
                         }`}
                         onClick={() => {
-                          setSelectedGrades((prev) =>
-                            isSelected
-                              ? prev.filter((c) => c !== cls)
-                              : [...prev, cls]
-                          );
+                          if (formData.role === "tutor") {
+                            // Gia sư được chọn nhiều lớp
+                            setSelectedGrades((prev) =>
+                              isSelected
+                                ? prev.filter((c) => c !== cls)
+                                : [...prev, cls]
+                            );
+                          } else {
+                            // Học sinh chỉ chọn 1 lớp
+                            setSelectedGrades([cls]);
+                            setShowClassPopup(false); // Tùy chọn: đóng popup luôn
+                          }
                         }}
                       >
                         {cls}
@@ -464,30 +533,10 @@ const EditProfileForm: React.FC<PostModalProps> = ({
                     );
                   })}
                 </div>
-                <div className="flex justify-end gap-2">
-                  <button
-                    className="px-4 py-2 rounded bg-gray-200 text-gray-700"
-                    onClick={() => setShowClassPopup(false)}
-                  >
-                    Hủy
-                  </button>
-                  <button
-                    className="px-4 py-2 rounded bg-[--color2] text-white"
-                    onClick={() => {
-                      setFormData((prev) => ({
-                        ...prev,
-                        grades: selectedGrades,
-                      }));
-                      setShowClassPopup(false);
-                    }}
-                  >
-                    Lưu
-                  </button>
-                </div>
               </div>
             </div>
           )}
-
+          
           <div>
             <label className="block text-sm font-medium mb-1">
               Giới thiệu (bio)
@@ -500,28 +549,72 @@ const EditProfileForm: React.FC<PostModalProps> = ({
               rows={3}
             />
           </div>
+          {user && formData.role === "tutor" && (
+            <>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Trình độ học vấn
+                </label>
+                <select
+                  value={formData.education || ""}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      education: e.target.value,
+                    }))
+                  }
+                  className="w-full border rounded px-3 py-2"
+                >
+                  <option value="">-- Chọn trình độ học vấn --</option>
+                  <option value="Trung cấp">Trung cấp</option>
+                  <option value="Cao đẳng">Cao đẳng</option>
+                  <option value="Đại học">Đại học</option>
+                  <option value="Thạc sĩ">Thạc sĩ</option>
+                  <option value="Tiến sĩ">Tiến sĩ</option>
+                </select>
+              </div>
 
-          {/* <div>
-            <label className="block text-sm font-medium mb-1">
-              Ảnh đại diện
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="w-full"
-            />
-          </div> */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Kinh nghiệm
+                </label>
+                <select
+                  value={formData.experience || ""}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      experience: e.target.value,
+                    }))
+                  }
+                  className="w-full border rounded px-3 py-2"
+                >
+                  <option value="">-- Chọn kinh nghiệm --</option>
+                  <option value="Dưới 1 năm">Dưới 1 năm</option>
+                  <option value="1-2 năm">1-2 năm</option>
+                  <option value="3-5 năm">3-5 năm</option>
+                  <option value="Trên 5 năm">Trên 5 năm</option>
+                  <option value="Trên 10 năm">Trên 10 năm</option>
+                </select>
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Ảnh nền</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleBGFileChange}
-              className="w-full"
-            />
-          </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Giá mỗi giờ (VNĐ)
+                </label>
+                <input
+                  type="number"
+                  value={formData.pricePerHour ?? ""}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      pricePerHour: parseInt(e.target.value),
+                    }))
+                  }
+                  className="w-full border rounded px-3 py-2"
+                />
+              </div>
+            </>
+          )}
 
           <div>
             <label className="block text-sm font-medium mb-1">Địa chỉ</label>

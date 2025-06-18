@@ -1,6 +1,5 @@
 import { Route, Routes, useLocation } from "react-router-dom";
 import "./App.css";
-// import Header from "./components/Header";
 import Homepage from "./pages/Homepage";
 import Chatpage from "./pages/Chatpage";
 import Login from "./pages/Login";
@@ -10,6 +9,7 @@ import PrivateRoute from "./PrivateRoute";
 import ProfilePage from "./pages/ProfilePage";
 import SearchPage from "./pages/SearchPage";
 import Sidebar from "./components/Sidebar";
+import MyCalendar from "./components/Calendar";
 
 function App() {
   const location = useLocation();
@@ -20,7 +20,7 @@ function App() {
     <ToastProvider>
       <div className="flex">
         {shouldShowHeader && <Sidebar />}
-        <div className={`flex-1 ${shouldShowHeader ? "ml-[250px]" : ""}`}>
+        <div className={`flex-1 ${shouldShowHeader ? "ml-[220px]" : ""}`}>
           <Routes>
             <Route path="/sign-up" element={<Signup />} />
             <Route path="/login" element={<Login />} />
@@ -40,6 +40,14 @@ function App() {
             <Route
               path="/search"
               element={<PrivateRoute element={<SearchPage />} />}
+            />
+            <Route
+              path="/calendar"
+              element={<PrivateRoute element={<MyCalendar />} />}
+            />
+            <Route
+              path="/calendar/:userId"
+              element={<PrivateRoute element={<MyCalendar />} />}
             />
           </Routes>
         </div>

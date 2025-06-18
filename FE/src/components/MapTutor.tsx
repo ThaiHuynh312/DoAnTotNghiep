@@ -10,9 +10,18 @@ import {
 import { Icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useState } from "react";
+import mapred from "../assets/img/mapred.svg";
+import mapgreen from "../assets/img/mapgreen.svg";
+import center from "../assets/img/center.svg";
 
 const markerIcon = new Icon({
-  iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
+  iconUrl: mapred,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
+
+const markerIcongreen = new Icon({
+  iconUrl: mapgreen,
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 });
@@ -100,7 +109,6 @@ const MapTutor: React.FC<Props> = ({
 
   return (
     <div className="relative w-full h-full">
-      {/* Header hiển thị khoảng cách nếu có */}
       {routeDistance !== null && (
         <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-[1000] bg-white px-4 py-2 rounded shadow-md border text-sm font-medium">
           Khoảng cách:{" "}
@@ -114,9 +122,9 @@ const MapTutor: React.FC<Props> = ({
         <div className="absolute bottom-2 left-2 z-[1000] flex gap-2">
           <button
             onClick={handleGetCurrentLocation}
-            className="bg-blue-600 text-white px-3 py-1 rounded"
+            className="bg-[--color2] hover:bg-[--color3] text-white p-2 rounded-full"
           >
-            📍 Lấy vị trí của tôi
+            <img src={center} alt="Center" className="w-8 h-8 " />
           </button>
         </div>
       )}
@@ -130,10 +138,14 @@ const MapTutor: React.FC<Props> = ({
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         {isExpanded && <HandleMapClick />}
 
-        <Marker position={origin} icon={markerIcon}></Marker>
+        <Marker position={origin} icon={markerIcon}>
+          <Popup>Vị trí của đối phương</Popup>
+        </Marker>
 
         {selectedPosition && (
-          <Marker position={selectedPosition} icon={markerIcon}></Marker>
+          <Marker position={selectedPosition} icon={markerIcongreen}>
+            <Popup>Vị trí đã chọn</Popup>
+          </Marker>
         )}
 
         {routeCoords.length > 0 && (

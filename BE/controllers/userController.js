@@ -103,126 +103,6 @@ exports.getMessageContacts = async (req, res) => {
   }
 };
 
-// exports.updateUser = async (req, res) => {
-//   try {
-//     const userId = req.user?._id;
-//     if (!userId) return res.status(401).json({ message: "Unauthorized" });
-
-//     const { username, email, bio, gender, birthday, phone, role } = req.body;
-
-//     // 👇 Parse address nếu là string
-//     let address = req.body.address;
-//     if (typeof address === 'string') {
-//       try {
-//         address = JSON.parse(address);
-//       } catch (e) {
-//         return res.status(400).json({ message: "Định dạng địa chỉ không hợp lệ" });
-//       }
-//     }
-
-//     let avatarUrl = req.user.avatar;
-//     if (req.file && req.file.path) {
-//       avatarUrl = req.file.path;
-//     }
-
-//     const updatedUser = await User.findByIdAndUpdate(
-//       userId,
-//       {
-//         username,
-//         email,
-//         bio,
-//         avatar: avatarUrl,
-//         gender,
-//         birthday,
-//         phone,
-//         address,
-//         ...(role && { role })
-//       },
-//       { new: true }
-//     ).select("-password");
-
-//     if (!updatedUser) return res.status(404).json({ message: "User not found" });
-
-//     res.status(200).json({
-//       message: "Cập nhật thông tin thành công",
-//       updatedUser
-//     });
-//   } catch (err) {
-//     console.error("Error updating user:", err);
-//     res.status(500).json({ message: "Lỗi server khi cập nhật thông tin" });
-//   }
-// };
-
-// exports.updateUser = async (req, res) => {
-//   try {
-//     const userId = req.user?._id;
-//     if (!userId) return res.status(401).json({ message: "Unauthorized" });
-
-//     const {
-//       username,
-//       email,
-//       bio,
-//       gender,
-//       birthday,
-//       phone,
-//       role,  
-//       grades,        
-//       subjects      
-//     } = req.body;
-
-//     // 👇 Parse address nếu là string
-//     let address = req.body.address;
-//     if (typeof address === 'string') {
-//       try {
-//         address = JSON.parse(address);
-//       } catch (e) {
-//         return res.status(400).json({ message: "Định dạng địa chỉ không hợp lệ" });
-//       }
-//     }
-//     //
-//     const userInfor = await User.findById(userId);
-
-//     let avatarUrl = userInfor.avatar;
-//       let backgroundUrl = userInfor.backgroundImage;
-//       if (req.files && req.files.avatar?.[0]) {
-//         if (avatarUrl) await deleteFromCloudinary(avatarUrl);
-//         avatarUrl = req.files.avatar?.[0].path;
-//       }
-//       if (req.files && req.files.backgroundImage?.[0]) {
-//         if (backgroundUrl) await deleteFromCloudinary(backgroundUrl);
-//         backgroundUrl = req.files.backgroundImage?.[0].path;
-//       }
-
-//     const updatedUser = await User.findByIdAndUpdate(
-//       userId,
-//       {
-//         username,
-//         email,
-//         bio,
-//         avatar: avatarUrl,
-//         gender,
-//         birthday,
-//         phone,
-//         address,
-//         backgroundImage: backgroundUrl,
-//         grades: Array.isArray(grades) ? grades : [],
-//         subjects: Array.isArray(subjects) ? subjects : [],
-//         ...(role && { role })
-//       },
-//       { new: true }
-//     ).select("-password");
-
-//     if (!updatedUser) return res.status(404).json({ message: "User not found" });
-
-//     res.status(200).json({
-//       message: "Cập nhật thông tin thành công",
-//       updatedUser
-//     });
-//   } catch (err) {
-//     console.error("Error updating user:", err);
-//     res.status(500).json({ message: "Lỗi server khi cập nhật thông tin" });
-//   }
-// };
 exports.updateUser = async (req, res) => {
   try {
     const userId = req.user?._id;
@@ -237,7 +117,11 @@ exports.updateUser = async (req, res) => {
       phone,
       role,
       grades,
-      subjects
+      subjects,
+      pricePerHour,
+      education,
+      experience,
+      searchable
     } = req.body;
 
     let address = req.body.address;
@@ -253,7 +137,6 @@ exports.updateUser = async (req, res) => {
     let avatarUrl = userInfor.avatar;
     let backgroundUrl = userInfor.backgroundImage;
 
-    // ✅ Sửa đúng chỗ này: dùng req.files
     if (req.files?.avatar?.[0]) {
       if (avatarUrl) await deleteFromCloudinary(avatarUrl);
       avatarUrl = req.files.avatar[0].path;
@@ -279,6 +162,10 @@ exports.updateUser = async (req, res) => {
         grades: Array.isArray(grades) ? grades : [],
         subjects: Array.isArray(subjects) ? subjects : [],
         ...(role && { role }),
+        pricePerHour,
+        education,
+        experience,
+        searchable,
       },
       { new: true }
     ).select("-password");
@@ -295,7 +182,6 @@ exports.updateUser = async (req, res) => {
   }
 };
 
-
 exports.searchUsers = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -307,15 +193,22 @@ exports.searchUsers = async (req, res) => {
       address,
       grade,
       subject,
-      gender
+      gender,
+      role,
+      priceMin,
+      priceMax,
+      education,
+      experience
     } = req.query;
 
-    // 👉 Nếu người dùng là học sinh thì tìm gia sư, ngược lại thì tìm học sinh
-    const targetRole = currentUser.role === "student" ? "tutor" : "student";
-
     const query = {
-      role: targetRole
+      searchable: { $ne: false },
+      role: { $ne: "admin" }
     };
+
+    if (role && ["student", "tutor"].includes(role)) {
+      query.role = role;
+    }
 
     if (username && username.trim() !== "") {
       query.username = { $regex: username.trim(), $options: "i" };
@@ -326,36 +219,51 @@ exports.searchUsers = async (req, res) => {
     }
 
     if (grade && grade.trim() !== "") {
-      query.grades = grade;
+      const gradesArray = grade.split(",").map(g => g.trim());
+      query.grades = { $in: gradesArray };
     }
 
     if (subject && subject.trim() !== "") {
-      query.subjects = subject;
+      const subjectsArray = subject.split(",").map(s => s.trim());
+      query.subjects = { $in: subjectsArray };
     }
 
     if (gender && ["male", "female", "other"].includes(gender)) {
       query.gender = gender;
     }
 
+    if (priceMin || priceMax) {
+      query.pricePerHour = {};
+      if (priceMin) query.pricePerHour.$gte = Number(priceMin);
+      if (priceMax) query.pricePerHour.$lte = Number(priceMax);
+    }
+
+    if (education && education.trim() !== "") {
+      query.education = { $regex: education.trim(), $options: "i" };
+    }
+
+    if (experience && experience.trim() !== "") {
+  query.experience = experience.trim();
+}
+
     const users = await User.find(query).select("-password");
 
-    // Đảm bảo address luôn có định dạng đầy đủ
     const formattedUsers = users.map(user => ({
       ...user.toObject(),
       address: user.address || { name: "", lng: null, lat: null }
     }));
 
     res.status(200).json({ users: formattedUsers });
+
   } catch (err) {
     console.error("Lỗi tìm kiếm người dùng:", err);
     res.status(500).json({ message: "Lỗi server khi tìm kiếm người dùng" });
   }
 };
 
-// Tính khoảng cách giữa hai điểm địa lý
 function haversineDistance(lat1, lng1, lat2, lng2) {
   const toRad = (value) => (value * Math.PI) / 180;
-  const R = 6371; // Earth radius in km
+  const R = 6371;
 
   const dLat = toRad(lat2 - lat1);
   const dLng = toRad(lng2 - lng1);
@@ -368,10 +276,9 @@ function haversineDistance(lat1, lng1, lat2, lng2) {
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-  return R * c; // distance in km
+  return R * c;
 }
 
-// Gợi ý người dùng
 exports.suggestUsers = async (req, res) => {
   try {
     const currentUser = await User.findById(req.user._id);
@@ -382,7 +289,8 @@ exports.suggestUsers = async (req, res) => {
     const candidates = await User.find({
       role: targetRole,
       subjects: { $in: currentUser.subjects },
-      grades: { $in: currentUser.grades }
+      grades: { $in: currentUser.grades },
+      searchable: { $ne: false },
     });
 
     const suggestions = candidates
@@ -398,11 +306,38 @@ exports.suggestUsers = async (req, res) => {
         return { user, distance };
       })
       .sort((a, b) => a.distance - b.distance)
-      .slice(0, 5); // lấy top 5 gần nhất
+      .slice(0, 5); 
 
     res.json(suggestions.map(s => s.user));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.toggleSearchable = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const newSearchable = !user.searchable;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { searchable: newSearchable },
+      { new: true }
+    ).select("-password");
+
+    res.status(200).json({
+      message: `Chế độ tìm kiếm đã được ${newSearchable ? "bật" : "tắt"}`,
+      searchable: updatedUser.searchable
+    });
+  } catch (err) {
+    console.error("Lỗi khi bật/tắt tìm kiếm:", err);
+    res.status(500).json({ message: "Lỗi server khi cập nhật searchable" });
   }
 };

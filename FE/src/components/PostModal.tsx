@@ -55,17 +55,14 @@ const PostModal: React.FC<PostModalProps> = ({
   const handleRemoveImage = (index: number) => {
     const previewToRemove = previews[index];
 
-    // Nếu ảnh trong keptImages → xóa khỏi keptImages
     if (keptImages.includes(previewToRemove)) {
       setKeptImages((prev) => prev.filter((img) => img !== previewToRemove));
     } else {
-      // Ảnh mới upload
       setSelectedImages((prev) =>
         prev.filter((_, i) => i !== index - keptImages.length)
       );
     }
 
-    // Xóa khỏi preview
     setPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -106,7 +103,9 @@ const PostModal: React.FC<PostModalProps> = ({
       <div className="bg-white max-h-[95vh] overflow-y-auto w-full max-w-xl p-5 rounded-lg shadow-xl text-gray-800 relative scrollbar-hide">
         <div className="flex justify-between items-center mb-4">
           <div></div>
-          <h2 className="text-xl font-semibold ">Tạo bài đăng mới</h2>
+          <h2 className="text-xl font-semibold ">
+            {postToEdit ? "Chỉnh sửa bài đăng" : "Tạo bài đăng mới"}
+          </h2>
           <button onClick={onClose} className="text-gray-500 hover:text-black">
             <img src={closeblack} alt="Close" className="text-black" />
           </button>

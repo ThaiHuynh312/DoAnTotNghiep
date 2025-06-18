@@ -1,4 +1,3 @@
-import about from "../assets/img/About.svg";
 import send from "../assets/img/Send.svg";
 import ava from "../assets/img/avatar.jpg";
 import { IContact, IUser } from "../types/user";
@@ -7,10 +6,7 @@ import { io, Socket } from "socket.io-client";
 import Chatlist from "../components/Chatlist";
 import { apiGetMessages } from "../services/message";
 import { IMessage } from "../types/message";
-import {
-  apiGetContactsHistory,
-  apiGetInfoUser,
-} from "../services/user";
+import { apiGetContactsHistory, apiGetInfoUser } from "../services/user";
 import { Link, useParams } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
 
@@ -38,7 +34,6 @@ const Chatpage = () => {
     try {
       const response = await apiGetInfoUser(id || "");
       setUserContacts(response);
-      console.log("User info:", response);
     } catch (error) {
       console.error("Error fetching messages:", error);
     }
@@ -100,22 +95,17 @@ const Chatpage = () => {
     setSocket(newSocket);
 
     newSocket.on("connect", () => {
-      console.log("✅ Socket connected");
     });
 
     newSocket.on("newMessage", (msg) => {
       setListMessages((prev) => [...prev, msg]);
       fetchContacts();
-      console.log("New message received:", msg);
-      console.log("Listmess:", listMessages);
     });
     newSocket.on("disconnect", () => {
-      console.log("❌ Socket disconnected");
     });
 
     return () => {
       newSocket.disconnect();
-      console.log("🧹 Socket connection cleaned up");
     };
   }, []);
 
@@ -140,14 +130,11 @@ const Chatpage = () => {
                     <span className="font-semibold text-base">
                       {userContacts.username}
                     </span>
-                    <div className="text-gray-500 text-xs">Đang hoạt động</div>
+                    <div className="text-gray-500 text-xs">
+                      {userContacts.role === "tutor" ? "Giáo sư" : "Học sinh"}
+                    </div>
                   </div>
                 </div>
-                <img
-                  src={about}
-                  alt="About"
-                  className="relative h-5 w-5 rounded-full"
-                />
               </div>
             ) : (
               <div className="flex items-center">
@@ -157,8 +144,6 @@ const Chatpage = () => {
               </div>
             )}
           </div>
-
-          {/* Lịch sử tin nhắn */}
           <div className="flex-1 overflow-y-auto p-4 space-y-2">
             {listMessages.map((msg, index) => (
               <div
@@ -187,7 +172,6 @@ const Chatpage = () => {
             ))}
           </div>
 
-          {/* Ô nhập tin nhắn */}
           <div className="px-3 py-2 flex items-center">
             <input
               type="text"

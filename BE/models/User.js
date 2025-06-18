@@ -14,14 +14,23 @@ const userSchema = new mongoose.Schema({
   subjects: { type: [String], default: [] }, 
   role: {
     type: String,
-    enum: ["student", "tutor"],
+    enum: ["student", "tutor","admin"],
     default: "student"
   },
   address: {
     name: { type: String },
     lng: { type: Number },
     lat: { type: Number }
-  }
+  },
+  searchable: { type: Boolean, default: true }, 
+  pricePerHour: { type: Number, default: 0 }, 
+  education: { type: String, default: "" }, 
+  experience: { type: String, default: "" }, 
+  status: { 
+  type: String, 
+  enum: ["active", "blocked"], 
+  default: "active" 
+  },
 });
 
 userSchema.set('toJSON', {

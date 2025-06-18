@@ -13,7 +13,6 @@ const storage = new CloudinaryStorage({
 
 const deleteFromCloudinary = (imageUrl) => {
   const publicId = imageUrl.split("/").pop().split(".")[0];
-  console.log("imageUrl", imageUrl);
   return new Promise((resolve, reject) => {
     cloudinary.uploader.destroy(`${publicId}`, (error, result) => {
       if (error) reject(error);

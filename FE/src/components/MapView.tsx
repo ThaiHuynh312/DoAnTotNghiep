@@ -8,14 +8,14 @@ import {
 } from "react-leaflet";
 import { Icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
+import map from "../assets/img/mapred.svg";
 
 const markerIcon = new Icon({
-  iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
+  iconUrl: map,
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 });
 
-// Component để xử lý click vào map và lưu tọa độ
 const ClickHandler = ({
   setClickedLatLng,
 }: {
@@ -37,7 +37,6 @@ interface MapViewProps {
 const MapView: React.FC<MapViewProps> = ({ value, onChange }) => {
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
-  console.log("value", value);
 
   useEffect(() => {
     if ("geolocation" in navigator) {

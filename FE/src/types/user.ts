@@ -19,6 +19,10 @@ export interface IUser {
   backgroundImage?: string;
   grades?: string[];
   subjects?: string[];
+  searchable?: boolean;
+  education?: string;
+  experience?: string;
+  pricePerHour?: number;
 }
 
 export interface IAddress {
@@ -49,6 +53,9 @@ export interface IUpdateUser {
   backgroundImage?: string;
   grades?: string[];
   subjects?: string[];
+  education?: string;
+  experience?: string;
+  pricePerHour?: number;
 }
 
 export interface ISearchFiltersResponse {

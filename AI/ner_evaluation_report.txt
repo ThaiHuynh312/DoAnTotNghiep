@@ -1,0 +1,54 @@
+Precision: 100.00%
+Recall: 100.00%
+F1-score: 100.00%
+
+
+=== Tổng hợp thực thể ===
+
+✅ True positives (36):
+  ('1', 'LOP')
+  ('10', 'LOP')
+  ('11', 'LOP')
+  ('12', 'LOP')
+  ('2', 'LOP')
+  ('3', 'LOP')
+  ('4', 'LOP')
+  ('5', 'LOP')
+  ('6', 'LOP')
+  ('7', 'LOP')
+  ('8', 'LOP')
+  ('9', 'LOP')
+  ('anh', 'MONHOC')
+  ('công nghệ', 'MONHOC')
+  ('gdcd', 'MONHOC')
+  ('hóa', 'MONHOC')
+  ('lí', 'MONHOC')
+  ('lý', 'MONHOC')
+  ('lớp 1', 'LOP')
+  ('lớp 10', 'LOP')
+  ('lớp 11', 'LOP')
+  ('lớp 12', 'LOP')
+  ('lớp 2', 'LOP')
+  ('lớp 3', 'LOP')
+  ('lớp 4', 'LOP')
+  ('lớp 5', 'LOP')
+  ('lớp 6', 'LOP')
+  ('lớp 7', 'LOP')
+  ('lớp 8', 'LOP')
+  ('lớp 9', 'LOP')
+  ('sinh', 'MONHOC')
+  ('sử', 'MONHOC')
+  ('tin', 'MONHOC')
+  ('toán', 'MONHOC')
+  ('văn', 'MONHOC')
+  ('địa', 'MONHOC')
+
+❌ False positives (0):
+
+❌ False negatives (0):
+
+=== Chi tiết các thực thể sai ===
+
+❌ Chi tiết False Positives (Dự đoán sai):
+
+❌ Chi tiết False Negatives (Bỏ sót):

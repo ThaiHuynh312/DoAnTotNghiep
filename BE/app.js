@@ -8,6 +8,10 @@ const messageRoutes = require('./routes/message');
 const userRoutes = require("./routes/user");
 const uploadRoutes = require("./routes/upload");
 const postRoutes = require("./routes/post");
+const notificationRoutes = require("./routes/notification");
+const calendarRoutes = require("./routes/calendar");
+const reportRoutes = require('./routes/reportRoutes');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 
@@ -19,5 +23,9 @@ app.use('/api/users', userRoutes);
 app.use('/api/messages', messageRoutes);
 app.use("/api", uploadRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/notifications", notificationRoutes); 
+app.use("/api/calendar", calendarRoutes); 
+app.use('/api/reports', reportRoutes);
+app.use('/api/admin', adminRoutes);
 
 module.exports = app;

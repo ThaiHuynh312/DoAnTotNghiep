@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
 import { IUser } from "@/types/user";
 import { apiGetSuggestedUsers } from "@/services/user";
+import UserDetailModal from "@/components/UserDetailModal";
 
 const Homepage = () => {
   const [showModal, setShowModal] = useState(false);
@@ -15,6 +16,13 @@ const Homepage = () => {
   const { user } = useUser();
   const [postToEdit, setPostToEdit] = useState<IPost | null>(null);
   const [suggestedUsers, setSuggestedUsers] = useState<IUser[]>([]);
+  const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleUserClick = (user: IUser) => {
+    setSelectedUser(user);
+    setIsModalOpen(true);
+  };
 
   const handleEditPost = (post: IPost) => {
     setPostToEdit(post);
@@ -24,7 +32,7 @@ const Homepage = () => {
   const fetchSuggestedUsers = async () => {
     try {
       const res = await apiGetSuggestedUsers();
-      setSuggestedUsers(res); // giả sử là mảng user
+      setSuggestedUsers(res);
     } catch (error) {
       console.error("Lỗi lấy danh sách người dùng đề xuất:", error);
     }
@@ -52,8 +60,8 @@ const Homepage = () => {
   };
 
   return (
-    <div className="bg-gray-100 flex flex-row flex-1">
-      <div className="flex flex-1 w-1/2 items-center justify-center">
+    <div className="bg-gray-100 min-h-screen flex flex-row flex-1">
+      <div className="flex flex-1 w-1/2 items-start justify-center">
         <div className="flex flex-1 max-w-xl flex-col items-center justify-center px-4">
           {/* Tạo bài post */}
           <div className="w-full mt-4">
@@ -106,36 +114,83 @@ const Homepage = () => {
 
       <div className="w-1/4 p-3 ">
         <div className="bg-white p-2 rounded-xl shadow-md">
-          <h2 className="font-semibold mb-2 text-lg text-gray-600">
-            Phần đề xuất
+          <h2 className="font-semibold mb-1 ml-2 text-lg text-gray-700">
+            Đề xuất {user?.role === "tutor" ? "học sinh" : "gia sư"}
           </h2>
-          <div className="flex space-x-3 overflow-x-auto">
-            {suggestedUsers.map((user) => (
-              <div
-                key={user._id}
-                className="p-2 flex flex-1 rounded-lg hover:bg-gray-100"
-              >
-                <Link
-                  to={`/profile/${user._id}`}
-                  className="flex items-center gap-2"
-                >
-                  <img
-                    src={user.avatar || "/default-avatar.png"}
-                    alt="Avatar"
-                    className="h-12 w-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <h2 className="text-base font-semibold">{user.username}</h2>
-                    <p className="text-xs text-gray-600 mt-1 truncate overflow-hidden whitespace-nowrap max-w-[100% - 50px]">
-                      {user.address?.name}
-                    </p>
-                  </div>
-                </Link>
-              </div>
-            ))}
-          </div>
+          {(user?.grades?.length ?? 0) > 0 &&
+          (user?.subjects?.length ?? 0) > 0 ? (
+            suggestedUsers.length > 0 ? (
+              <>
+                <div className="flex flex-col overflow-x-auto">
+                  {suggestedUsers.map((user) => (
+                    <div
+                      key={user._id}
+                      className="p-2 flex flex-1 rounded-lg hover:bg-[--color5]"
+                    >
+                      <div
+                        onClick={() => handleUserClick(user)}
+                        className="flex items-center gap-2 max-w-full cursor-pointer"
+                      >
+                        <img
+                          src={user.avatar || "/default-avatar.png"}
+                          alt="Avatar"
+                          className="h-12 w-12 rounded-full object-cover aspect-square"
+                        />
+                        <div className="flex-1 min-w-0">
+                          {/* Quan trọng để `truncate` hoạt động */}
+                          <h2 className="text-base font-semibold">
+                            {user.username}
+                          </h2>
+
+                          {/* Hiển thị theo role */}
+                          {user.role === "tutor" ? (
+                            <>
+                              <p className="text-xs text-gray-700">
+                                {user.education}
+                              </p>
+                              {(user.pricePerHour ?? 0) > 0 && (
+                                <p className="text-xs text-gray-700">
+                                  {user.pricePerHour?.toLocaleString("vi-VN")}đ
+                                  / giờ
+                                </p>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-xs text-gray-700">
+                                {user.grades?.join(", ")}
+                              </p>
+                              <p className="text-xs text-gray-700">
+                                {user.subjects?.join(", ")}
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-gray-500 mt-2">
+                Hiện không có người phù hợp xung quanh.
+              </p>
+            )
+          ) : (
+            <p className="text-sm text-red-500 mt-2">
+              Vui lòng cập nhật thông tin đầy đủ để nhận được các đề xuất hữu
+              ích.
+            </p>
+          )}
         </div>
       </div>
+      {selectedUser && (
+        <UserDetailModal
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          user={selectedUser}
+        />
+      )}
     </div>
   );
 };

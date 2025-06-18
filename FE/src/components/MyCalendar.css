@@ -1,0 +1,36 @@
+/* src/components/MyCalendar.css */
+.custom-calendar .rbc-calendar {
+  @apply text-sm;
+}
+
+.custom-calendar .rbc-toolbar {
+  @apply flex flex-col md:flex-row items-start md:items-center justify-between gap-2 mb-4;
+}
+
+.custom-calendar .rbc-toolbar-label {
+  @apply text-xl font-semibold text-gray-800 dark:text-white;
+}
+
+.custom-calendar .rbc-btn-group button {
+  @apply bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-white px-3 py-1 rounded-md border border-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition;
+}
+
+.custom-calendar .rbc-event {
+  @apply bg-blue-500 text-white px-2 py-1 rounded-md text-xs shadow-sm;
+}
+
+.custom-calendar .rbc-time-content {
+  @apply border-t border-gray-300 dark:border-gray-700;
+}
+
+.custom-calendar .rbc-day-bg {
+  @apply hover:bg-gray-50 dark:hover:bg-gray-800 transition;
+}
+
+.custom-calendar .rbc-today {
+  @apply bg-blue-50 dark:bg-blue-900;
+}
+
+.rbc-allday-cell {
+  display: none !important;
+}

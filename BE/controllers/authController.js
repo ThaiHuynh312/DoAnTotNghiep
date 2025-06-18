@@ -5,7 +5,6 @@ const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 
-// Register
 exports.register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -38,7 +37,6 @@ exports.register = async (req, res) => {
   }
 };
 
-// Login
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -64,8 +62,8 @@ exports.login = async (req, res) => {
       username: user.username
     };
 
-    const accessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
-    const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
+    const accessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '15d' });
+    const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: '30d' });
 
     res.status(200).json({
       status: '200',
@@ -85,8 +83,6 @@ exports.login = async (req, res) => {
   }
 };
 
-
-// Refresh Token
 exports.refreshToken = async (req, res) => {
   const { refresh_token } = req.body;
 

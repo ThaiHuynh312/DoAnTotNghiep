@@ -1,0 +1,6 @@
+{
+  "@tokenizers": "spacy.Tokenizer.v1",
+  "config": {
+    "use_empty_config": true
+  }
+}
