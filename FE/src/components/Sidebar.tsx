@@ -18,11 +18,11 @@ import {
 } from "@/services/notification";
 import { INotification } from "@/types/notification";
 import { IPost } from "@/types/post";
-import Post from "./Post";
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
 import relativeTime from "dayjs/plugin/relativeTime";
 import Switcher from "./Switcher";
+import PostNoti from "./PostNoti";
 dayjs.extend(relativeTime);
 dayjs.locale("vi");
 
@@ -34,8 +34,6 @@ const Sidebar = () => {
   const isActiveRoute = (path: string) => location.pathname === path;
   const [notifications, setNotifications] = useState<INotification[]>([]);
   const [showNoti, setShowNoti] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [postToEdit, setPostToEdit] = useState<IPost | null>(null);
   const notiRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
 
@@ -53,11 +51,6 @@ const Sidebar = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const handleEditPost = (post: IPost) => {
-    setPostToEdit(post);
-    setShowModal(true);
-  };
 
   const handleLogout = () => {
     localStorage.removeItem("access_token");
@@ -104,8 +97,6 @@ const Sidebar = () => {
       console.error("Lỗi khi xử lý thông báo:", error);
     }
   };
-
-  const handleDeletePost = () => {};
 
   return (
     <div className="fixed top-0 left-0 h-full w-[220px] px-3 pt-2 bg-white border-r shadow-lg z-50 flex flex-col justify-between py-4">
@@ -209,11 +200,13 @@ const Sidebar = () => {
                 className=" rounded-lg p-4 max-w-lg w-full relative"
                 onClick={(e) => e.stopPropagation()}
               >
-                <Post
+                <PostNoti
                   key={selectedPost._id}
                   post={selectedPost}
-                  onDelete={handleDeletePost}
-                  onUpdate={handleEditPost}
+                  onOke={() => {
+                    setSelectedPost(null);
+                    setShowNoti(false);
+                  }}
                 />
               </div>
             </div>
