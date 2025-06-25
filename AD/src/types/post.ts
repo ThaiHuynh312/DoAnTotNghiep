@@ -21,6 +21,7 @@ export interface IPost {
   comments: any[];
   createdAt: string;
   updatedAt: string;
+  status: "active" | "banned";
   __v: number;
 }
 

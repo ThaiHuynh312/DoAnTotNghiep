@@ -144,7 +144,7 @@ if (currentUser.role === "student") {
 
 exports.getAllPosts = async (req, res) => {
     try {
-      const posts = await Post.find()
+      const posts = await Post.find({ status: { $ne: "banned" } })
         .populate("creator", "username email avatar") 
         .populate("comments.user", "username avatar") 
         .sort({ createdAt: -1 }); 
@@ -163,7 +163,7 @@ exports.getAllPosts = async (req, res) => {
     try {
       const userId = req.user._id;
   
-      const posts = await Post.find({ creator: userId })
+      const posts = await Post.find({ creator: userId, status: { $ne: "banned" }  })
         .sort({ createdAt: -1 }) 
         .populate("creator", "username avatar");
   
@@ -186,7 +186,7 @@ exports.getAllPosts = async (req, res) => {
         return res.status(401).json({ message: "Chưa xác thực người dùng" });
       }
   
-      const posts = await Post.find({ creator: userId })
+      const posts = await Post.find({ creator: userId, status: { $ne: "banned" }  })
         .sort({ createdAt: -1 })
         .populate("creator", "username avatar");
   

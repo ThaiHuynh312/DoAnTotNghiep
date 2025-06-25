@@ -172,8 +172,8 @@ const Sidebar = () => {
                         </span>{" "}
                         {noti.type === "like"
                           ? "đã thích bài viết của bạn"
-                          : noti.type === "comment"
-                          ? "đã bình luận về bài viết"
+                          : noti.type === "block"
+                          ? "đã khóa bài viết của bạn"
                           : noti.type === "post"
                           ? "đã đề xuất bài viết phù hợp với bạn"
                           : "đã tương tác với bài viết của bạn"}

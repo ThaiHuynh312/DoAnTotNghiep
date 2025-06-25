@@ -4,6 +4,7 @@ const User = require("../models/User");
 const Report = require("../models/Report");
 const Post = require('../models/Post');
 const Message = require('../models/Message');
+const Notification = require("../models/Notification");
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 
@@ -178,6 +179,86 @@ const updateReportStatus = async (req, res) => {
   }
 };
 
+const getReportedPosts = async (req, res) => {
+  try {
+    const reports = await Report.aggregate([
+      { 
+        $match: { 
+          type: "post", 
+          status: "resolved", 
+          targetPost: { $ne: null }
+        } 
+      },
+      {
+        $group: {
+          _id: "$targetPost",
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $match: { count: { $gte: 3 } }
+      }
+    ]);
+
+    const postIds = reports.map(r => r._id);
+
+    const posts = await Post.find({ _id: { $in: postIds } })
+      .populate("creator", "username email avatar")
+      .lean();
+
+    res.status(200).json({
+      message: "Danh sách bài viết bị báo cáo nhiều",
+      data: posts
+    });
+  } catch (err) {
+    console.error("❌ Lỗi getReportedPosts:", err);
+    res.status(500).json({ status: "error", message: "Lỗi máy chủ" });
+  }
+};
+
+const updatePostStatus = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const { status } = req.body;
+
+    if (!["active", "banned"].includes(status)) {
+      return res.status(400).json({ message: "Giá trị status không hợp lệ" });
+    }
+
+    const post = await Post.findByIdAndUpdate(postId, { status }, { new: true })
+      .populate("creator", "username email avatar");
+
+    if (!post) {
+      return res.status(404).json({ message: "Không tìm thấy bài viết" });
+    }
+
+    if (status === "banned") {
+      await Notification.create({
+        user: post.creator._id,
+        fromUser: req.user._id,
+        post: post._id,
+        type: "block",
+        isRead: false,
+      });
+    }
+
+    if (status === "active") {
+      await Notification.deleteMany({
+        post: post._id,
+        type: "block"
+      });
+    }
+
+    res.status(200).json({
+      message: `Đã cập nhật trạng thái bài viết thành '${status}'`,
+      post
+    });
+  } catch (err) {
+    console.error("Lỗi updatePostStatus:", err);
+    res.status(500).json({ message: "Lỗi máy chủ" });
+  }
+};
+
 module.exports = {
     adminLogin,
     getUsers,
@@ -185,4 +266,6 @@ module.exports = {
     getReports,
     updateReportStatus,
     getDashboardStats,
+    getReportedPosts,
+    updatePostStatus,
 };

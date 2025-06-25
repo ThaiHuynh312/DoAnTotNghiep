@@ -10,6 +10,7 @@ import Users from "./pages/Users";
 import Reports from "./pages/Reports";
 import Login from "./pages/Login";
 import Sidebar from "./components/Sidebar";
+import ReportedPostsPage from "./pages/ReportedPostsPage";
 
 function LayoutWithSidebar() {
   return (
@@ -20,6 +21,7 @@ function LayoutWithSidebar() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/users" element={<Users />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/reported-posts" element={<ReportedPostsPage />} />
         </Routes>
       </div>
     </div>

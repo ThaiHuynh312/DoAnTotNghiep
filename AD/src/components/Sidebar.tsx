@@ -7,11 +7,11 @@ const Sidebar = () => {
   const links = [
     { to: "/dashboard", label: "Dashboard" },
     { to: "/users", label: "Người dùng" },
+    { to: "/reported-posts", label: "Bài viết bị báo cáo" },
     { to: "/reports", label: "Báo cáo" },
   ];
 
   const handleLogout = () => {
-    // TODO: Xoá token hoặc state đăng nhập nếu có
     navigate("/login");
   };
 

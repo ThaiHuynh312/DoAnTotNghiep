@@ -93,9 +93,15 @@ export default function Reports() {
                   {report.reporter.username}
                 </td>
                 <td className="p-2">
-                  {report.type === "post" ? "Bài viết" : "Người dùng"}
+                  <span
+                    className={`px-2 py-1 rounded text-white text-sm ${
+                      report.type === "post" ? "bg-orange-500" : "bg-black"
+                    }`}
+                  >
+                    {report.type === "post" ? "Bài viết" : "Người dùng"}
+                  </span>
                 </td>
-                <td className="p-2">{report.reason}</td>
+                <td className="p-2 max-w-[200px] truncate">{report.reason}</td>
                 <td className="p-2">
                   <span
                     className={`px-2 py-1 rounded text-white text-sm ${
