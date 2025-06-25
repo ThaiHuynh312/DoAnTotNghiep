@@ -14,6 +14,7 @@ import {
   apiUpdateCalendarEvent,
 } from "../services/calendar";
 import { useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const localizer = momentLocalizer(moment);
 
@@ -185,7 +186,7 @@ const MyCalendar = () => {
     const endDate = new Date(`${data.date}T${data.endTime}`);
 
     if (startDate >= endDate) {
-      alert("Thời gian bắt đầu phải trước thời gian kết thúc.");
+      toast.error("Thời gian bắt đầu phải trước thời gian kết thúc.");
       return;
     }
 
@@ -213,11 +214,17 @@ const MyCalendar = () => {
         await apiCreateCalendarEvent(eventData);
       }
 
+      if (editingEvent) {
+        toast.success("Sự kiện đã được cập nhật thành công.");
+      } else {
+        toast.success("Sự kiện đã được tạo thành công.");
+      }
+
       await loadEvents();
       setShowForm(false);
       setEditingEvent(null);
     } catch (err) {
-      console.error("Error saving event", err);
+      toast.error("Lỗi khi lưu sự kiện.");
     }
   };
 
@@ -231,9 +238,10 @@ const MyCalendar = () => {
         setEvents((prev) => prev.filter((e) => !e.id.startsWith(baseId)));
 
         setShowForm(false);
+        toast.success("Sự kiện đã được xóa thành công.");
         setEditingEvent(null);
       } catch (err) {
-        console.error("Error deleting event", err);
+        toast.error("Lỗi khi xóa sự kiện.");
       }
     }
   };

@@ -16,8 +16,6 @@ const Signup = () => {
     confirmPassword: "",
   });
 
-  const [error, setError] = useState("");
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -26,10 +24,8 @@ const Signup = () => {
   };
 
   const handleSignUp = async () => {
-    setError("");
-
     if (formData.password !== formData.confirmPassword) {
-      setError("Mật khẩu xác nhận không khớp");
+      toast.error("Mật khẩu xác nhận không khớp");
       return;
     }
 
@@ -44,9 +40,8 @@ const Signup = () => {
         toast.success("Đăng ký thành công!");
         navigate("/login");
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Đăng ký thất bại");
+    } catch (err) {
+      toast.error("Đăng ký thất bại");
     }
   };
 
@@ -56,8 +51,6 @@ const Signup = () => {
         <h2 className="font-bold text-[32px] uppercase my-8">Đăng ký</h2>
 
         <div className="flex flex-col w-80">
-          {error && <p className="text-red-500 mb-2">{error}</p>}
-
           <div className="relative w-80 mb-6">
             <input
               type="text"

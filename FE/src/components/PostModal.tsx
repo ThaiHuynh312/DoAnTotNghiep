@@ -1,11 +1,12 @@
 import ava from "../assets/img/avatar.jpg";
-import close from "../assets/img/close.svg";
+import close from "../assets/img/Close.svg";
 import closeblack from "../assets/img/CloseBlack.svg";
 import React, { useEffect, useState } from "react";
 import { apiCreatePost, apiUpdatePost } from "@/services/post";
 import { IPost } from "@/types/post";
 import { useUser } from "@/contexts/UserContext";
 import { resizeImageFunction } from "@/utils/resizeImage";
+import { toast } from "react-toastify";
 
 interface PostModalProps {
   onClose: () => void;
@@ -89,10 +90,19 @@ const PostModal: React.FC<PostModalProps> = ({
       setContent("");
       setSelectedImages([]);
       setPreviews([]);
+      if (postToEdit) {
+        toast.success("Chỉnh sửa bài thành công!");
+      } else {
+        toast.success("Đăng bài thành công!");
+      }
       onClose();
       onPostSuccess?.();
     } catch (err) {
-      console.error("Lỗi khi đăng/chỉnh sửa bài:", err);
+      if (postToEdit) {
+        toast.error("Chỉnh sửa bài thất bại!");
+      } else {
+        toast.error("Đăng bài thất bại!");
+      }
     } finally {
       setLoading(false);
     }

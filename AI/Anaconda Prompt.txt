@@ -4,6 +4,8 @@ cd /d D:\DoAnTotNghiep\AI
 python app.py
 python evaluate_ner_model.py
 
+npx ngrok http 5000
+
 em muốn năm 2 địa chỉ 2 anh toán địa
 ai có nhu cầu 3 môn năm 1 và năm 3 3 địa anh
 em cần năm 1 địa chỉ 2 anh giá cả hợp lý

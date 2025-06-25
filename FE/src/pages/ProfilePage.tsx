@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
 import MapTutor from "@/components/MapTutor";
-import close from "../assets/img/close.svg";
+import close from "../assets/img/Close.svg";
 import mess from "../assets/img/Mess.svg";
 import cal from "../assets/img/calendar1.svg";
 import report from "../assets/img/report.svg";

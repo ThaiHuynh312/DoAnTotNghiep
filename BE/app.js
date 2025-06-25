@@ -15,16 +15,22 @@ const adminRoutes = require('./routes/admin');
 
 const app = express();
 
-app.use(cors());
+const corsOptions = {
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/messages', messageRoutes);
-app.use("/api", uploadRoutes);
-app.use("/api/posts", postRoutes);
-app.use("/api/notifications", notificationRoutes); 
-app.use("/api/calendar", calendarRoutes); 
+app.use('/api', uploadRoutes);
+app.use('/api/posts', postRoutes);
+app.use('/api/notifications', notificationRoutes); 
+app.use('/api/calendar', calendarRoutes); 
 app.use('/api/reports', reportRoutes);
 app.use('/api/admin', adminRoutes);
 

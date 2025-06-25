@@ -12,7 +12,6 @@ const Login = () => {
     email: "",
     password: "",
   });
-  const [error, setError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -23,10 +22,8 @@ const Login = () => {
   };
 
   const handleLogin = async () => {
-    setError("");
-
     if (!formData.email || !formData.password) {
-      setError("Vui lòng điền đầy đủ thông tin");
+      toast.error("Vui lòng điền đầy đủ thông tin");
       return;
     }
 
@@ -42,10 +39,8 @@ const Login = () => {
         toast.success("Đăng nhập thành công!");
         navigate("/");
       }
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Đăng nhập thất bại");
+    } catch (err) {
+      toast.error("Đăng nhập thất bại");
     }
   };
 
@@ -93,10 +88,6 @@ const Login = () => {
               Mật khẩu
             </label>
           </div>
-
-          {error && (
-            <div className="text-red-500 text-sm mb-4 text-center">{error}</div>
-          )}
 
           <button
             className="bg-[--color2] text-lg text-white py-2 rounded-lg text-center hover:bg-[--color3] cursor-pointer"

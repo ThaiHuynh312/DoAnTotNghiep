@@ -1,3 +1,5 @@
+import { toast } from "react-toastify";
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -68,17 +70,17 @@ const ScheduleModal: React.FC<Props> = ({
     const end = new Date(`${date}T${endTime}`);
 
     if (end <= start) {
-      alert("⛔ Thời gian kết thúc phải sau thời gian bắt đầu.");
+      toast.error("Thời gian kết thúc phải sau thời gian bắt đầu.");
       return;
     }
 
     if (repeat) {
       if (!repeatFrom || !repeatTo) {
-        alert("⛔ Vui lòng chọn ngày bắt đầu và kết thúc cho lịch lặp.");
+        toast.error("Vui lòng chọn ngày bắt đầu và kết thúc cho lịch lặp.");
         return;
       }
       if (new Date(repeatTo) < new Date(repeatFrom)) {
-        alert("⛔ Ngày kết thúc lặp phải sau ngày bắt đầu lặp.");
+        toast.error("Ngày kết thúc lặp phải sau ngày bắt đầu lặp.");
         return;
       }
     }

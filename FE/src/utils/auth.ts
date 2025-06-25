@@ -1,4 +1,4 @@
-import jwtDecode from "jwt-decode";
+import { jwtDecode } from 'jwt-decode';
 import { IUser } from "../types/user";
 
 const ACCESS_TOKEN_KEY = "access_token";

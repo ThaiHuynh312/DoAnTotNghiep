@@ -6,6 +6,7 @@ import closeblack from "../assets/img/CloseBlack.svg";
 import MapView from "./MapView";
 import { resizeImageFunction } from "@/utils/resizeImage";
 import cam from "../assets/img/camera.svg";
+import { toast } from "react-toastify";
 
 interface PostModalProps {
   onClose: () => void;
@@ -180,10 +181,11 @@ const EditProfileForm: React.FC<PostModalProps> = ({
       setLoading(true);
       const res = await apiUpdateUser(data);
       setUser(res.updatedUser);
+      toast.success("Cập nhật thông tin thành công!");
       onEditSuccess?.();
       onClose();
     } catch (error) {
-      console.error("Cập nhật thất bại:", error);
+      toast.error("Cập nhật thất bại!");
     } finally {
       setLoading(false);
     }

@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const User = require('../models/User');
 const Message = require('../models/Message');
 const { deleteFromCloudinary } = require('../middleware/upload');
@@ -56,49 +57,70 @@ exports.getUser = async (req, res) => {
 exports.getMessageContacts = async (req, res) => {
   try {
     const currentUserId = req.user?._id;
-    if (!currentUserId) return res.status(401).json({ error: 'Không có quyền truy cập' });
+    if (!currentUserId) {
+      return res.status(401).json({ error: "Không có quyền truy cập" });
+    }
 
-    const messages = await Message.find({
-      $or: [{ sender: currentUserId }, { receiver: currentUserId }]
-    }).select('sender receiver');
+    const currentUserObjectId = new mongoose.Types.ObjectId(currentUserId);
 
-    const contactIds = [
-      ...new Set(
-        messages.map(msg =>
-          msg.sender.toString() === currentUserId.toString()
-            ? msg.receiver.toString()
-            : msg.sender.toString()
-        )
-      )
-    ];
+    const lastMessages = await Message.aggregate([
+      {
+        $match: {
+          $or: [
+            { sender: currentUserObjectId },
+            { receiver: currentUserObjectId },
+          ],
+        },
+      },
+      { $sort: { createdAt: -1 } },
+      {
+        $project: {
+          sender: 1,
+          receiver: 1,
+          content: 1,
+          text: 1,
+          createdAt: 1,
+          contactId: {
+            $cond: {
+              if: { $eq: ["$sender", currentUserObjectId] },
+              then: "$receiver",
+              else: "$sender",
+            },
+          },
+        },
+      },
+      {
+        $group: {
+          _id: "$contactId",
+          lastMessage: { $first: "$content" },
+          lastMessageTime: { $first: "$createdAt" },
+        },
+      },
+      { $sort: { lastMessageTime: -1 } },
+    ]);
+
+    const contactIds = lastMessages.map((msg) => msg._id);
 
     const users = await User.find({ _id: { $in: contactIds } }).select(
-      '_id username email avatar address'
+      "_id username email avatar address"
     );
 
-    const contactsWithLastMessage = await Promise.all(
-      users.map(async user => {
-        const lastMsg = await Message.findOne({
-          $or: [
-            { sender: currentUserId, receiver: user._id },
-            { sender: user._id, receiver: currentUserId }
-          ]
-        })
-          .sort({ createdAt: -1 })
-          .lean();
+    const contacts = lastMessages.map((msg) => {
+      const user = users.find((u) => u._id.toString() === msg._id.toString());
+      return {
+        _id: user?._id,
+        username: user?.username,
+        email: user?.email,
+        avatar: user?.avatar,
+        address: user?.address || { name: "", lat: null, lng: null },
+        lastMessage: msg.lastMessage || "",
+        lastMessageTime: msg.lastMessageTime || null,
+      };
+    });
 
-        return {
-          ...user.toObject(),
-          address: user.address || { name: '', lng: null, lat: null },
-          lastMessage: lastMsg?.text || lastMsg?.content || null,
-          lastMessageTime: lastMsg?.createdAt || null
-        };
-      })
-    );
-
-    res.status(200).json(contactsWithLastMessage);
+    res.status(200).json(contacts);
   } catch (err) {
-    console.error("Error fetching message contacts:", err);
+    console.error("Lỗi khi lấy danh bạ nhắn tin:", err);
     res.status(500).json({ error: "Lỗi server khi lấy danh bạ nhắn tin" });
   }
 };

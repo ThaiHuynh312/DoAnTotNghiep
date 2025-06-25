@@ -57,7 +57,7 @@ exports.createPost = async (req, res) => {
     const { content } = req.body;
     const images = req.files?.map(file => file.path) || [];
 
-    const nerResponse = await axios.post('http://localhost:5001/ner', { text: content });
+    const nerResponse = await axios.post(process.env.NER_API_URL, { text: content });
     const entities = nerResponse.data.entities || [];
     const subjects = normalizeSubjects(entities);
     const grades = normalizeGrades(entities);
@@ -70,53 +70,71 @@ exports.createPost = async (req, res) => {
       grades,
     });
 
-    const student = await User.findById(userId);
-    if (!student || !student.address?.lat || !student.address?.lng) {
-      return res.status(201).json({
-        message: "Post created (but student location missing)",
-        post: newPost,
-      });
-    }
+    const currentUser = await User.findById(userId);
+if (!currentUser || !currentUser.address?.lat || !currentUser.address?.lng) {
+  return res.status(201).json({
+    message: "Post created (but user location missing)",
+    post: newPost,
+  });
+}
 
-    const studentLat = student.address.lat;
-    const studentLng = student.address.lng;
+const userLat = currentUser.address.lat;
+const userLng = currentUser.address.lng;
 
-    const tutors = await User.find({
-      role: 'tutor',
-      subjects: { $in: subjects },
-      grades: { $in: grades },
-      'address.lat': { $exists: true },
-      'address.lng': { $exists: true }
-    });
+let suggestedUsers = [];
 
-    const tutorsInRange = tutors.filter(tutor => {
-      const { lat, lng } = tutor.address;
-      return getDistanceFromLatLonInKm(studentLat, studentLng, lat, lng) <= 15;
-    });
+if (currentUser.role === "student") {
+  const tutors = await User.find({
+    role: "tutor",
+    subjects: { $in: subjects },
+    grades: { $in: grades },
+    "address.lat": { $exists: true },
+    "address.lng": { $exists: true },
+  });
 
-    const notifications = tutorsInRange.map(tutor => ({
-      user: tutor._id,
-      fromUser: userId,
-      post: newPost._id,
-      type: 'post',
-      isRead: false,
-      createdAt: new Date(),
-    }));
+  suggestedUsers = tutors.filter(tutor => {
+    const { lat, lng } = tutor.address;
+    return getDistanceFromLatLonInKm(userLat, userLng, lat, lng) <= 15;
+  });
+} else if (currentUser.role === "tutor") {
+  const students = await User.find({
+    role: "student",
+    subjects: { $in: subjects },
+    grades: { $in: grades },
+    "address.lat": { $exists: true },
+    "address.lng": { $exists: true },
+  });
+
+  suggestedUsers = students.filter(student => {
+    const { lat, lng } = student.address;
+    return getDistanceFromLatLonInKm(userLat, userLng, lat, lng) <= 15;
+  });
+}
+
+
+    const notifications = suggestedUsers.map(u => ({
+  user: u._id,
+  fromUser: userId,
+  post: newPost._id,
+  type: 'post',
+  isRead: false,
+  createdAt: new Date(),
+}));
 
     if (notifications.length > 0) {
       await Notification.insertMany(notifications);
     }
 
     res.status(201).json({
-      message: "Post created and suggestions sent to tutors",
-      post: newPost,
-      suggestedTutors: tutorsInRange.map(t => ({
-        _id: t._id,
-        name: t.name,
-        email: t.email,
-        distance: getDistanceFromLatLonInKm(studentLat, studentLng, t.address.lat, t.address.lng).toFixed(1) + ' km'
-      }))
-    });
+  message: `Post created and suggestions sent to ${currentUser.role === 'student' ? 'tutors' : 'students'}`,
+  post: newPost,
+  suggestedUsers: suggestedUsers.map(u => ({
+    _id: u._id,
+    name: u.name,
+    email: u.email,
+    distance: getDistanceFromLatLonInKm(userLat, userLng, u.address.lat, u.address.lng).toFixed(1) + ' km',
+  })),
+});
 
   } catch (error) {
     console.error("Error creating post:", error);
@@ -188,7 +206,7 @@ exports.updatePost = async (req, res) => {
     const keptImages = Array.isArray(req.body.keptImages)
       ? req.body.keptImages
       : req.body.keptImages
-      ? [req.body.keptImages] 
+      ? [req.body.keptImages]
       : [];
 
     const newImages = req.files?.map(file => file.path) || [];
@@ -208,22 +226,97 @@ exports.updatePost = async (req, res) => {
       await deleteFromCloudinary(img);
     }
 
-    if (content) post.content = content;
-    post.images = [...keptImages, ...newImages];
+    let subjects = post.subjects;
+    let grades = post.grades;
 
+    if (content) {
+      const nerResponse = await axios.post(process.env.NER_API_URL, { text: content });
+      const entities = nerResponse.data.entities || [];
+      subjects = normalizeSubjects(entities);
+      grades = normalizeGrades(entities);
+    }
+
+    post.content = content || post.content;
+    post.images = [...keptImages, ...newImages];
+    post.subjects = subjects;
+    post.grades = grades;
     await post.save();
 
+    await Notification.deleteMany({ post: postId });
+
+    const currentUser = await User.findById(userId);
+    if (!currentUser || !currentUser.address?.lat || !currentUser.address?.lng) {
+      return res.status(200).json({
+        message: "Post updated (but user location missing)",
+        post
+      });
+    }
+
+    const userLat = currentUser.address.lat;
+    const userLng = currentUser.address.lng;
+
+    let suggestedUsers = [];
+
+    if (currentUser.role === "student") {
+      const tutors = await User.find({
+        role: "tutor",
+        subjects: { $in: subjects },
+        grades: { $in: grades },
+        "address.lat": { $exists: true },
+        "address.lng": { $exists: true },
+      });
+
+      suggestedUsers = tutors.filter(tutor => {
+        const { lat, lng } = tutor.address;
+        return getDistanceFromLatLonInKm(userLat, userLng, lat, lng) <= 15;
+      });
+    } else if (currentUser.role === "tutor") {
+      const students = await User.find({
+        role: "student",
+        subjects: { $in: subjects },
+        grades: { $in: grades },
+        "address.lat": { $exists: true },
+        "address.lng": { $exists: true },
+      });
+
+      suggestedUsers = students.filter(student => {
+        const { lat, lng } = student.address;
+        return getDistanceFromLatLonInKm(userLat, userLng, lat, lng) <= 15;
+      });
+    }
+
+    const notifications = suggestedUsers.map(u => ({
+      user: u._id,
+      fromUser: userId,
+      post: post._id,
+      type: 'post',
+      isRead: false,
+      createdAt: new Date(),
+    }));
+
+    if (notifications.length > 0) {
+      await Notification.insertMany(notifications);
+    }
+
     res.status(200).json({
-      message: "Post updated successfully",
-      post
+      message: `Post updated and suggestions resent to ${currentUser.role === 'student' ? 'tutors' : 'students'}`,
+      post,
+      suggestedUsers: suggestedUsers.map(u => ({
+        _id: u._id,
+        name: u.name,
+        email: u.email,
+        distance: getDistanceFromLatLonInKm(userLat, userLng, u.address.lat, u.address.lng).toFixed(1) + ' km',
+      }))
     });
+
   } catch (error) {
     console.error("Error updating post:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-  exports.deletePost = async (req, res) => {
+
+exports.deletePost = async (req, res) => {
   try {
     const userId = req.user._id;
     const postId = req.params.id;
@@ -248,7 +341,7 @@ exports.updatePost = async (req, res) => {
   }
 };
 
-  exports.likePost = async (req, res) => {
+exports.likePost = async (req, res) => {
   try {
     const postId = req.params.id;
     const userId = req.user._id;

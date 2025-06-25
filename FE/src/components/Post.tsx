@@ -16,6 +16,7 @@ import { useState } from "react";
 import { apiDeletePost, apiLikePost } from "@/services/post";
 import { useUser } from "@/contexts/UserContext";
 import { apiReport } from "@/services/report";
+
 dayjs.extend(relativeTime);
 dayjs.locale("vi");
 
@@ -52,9 +53,10 @@ const Post: React.FC<{
   const handleDelete = async () => {
     try {
       await apiDeletePost(post._id);
+      toast.success("Xoá bài viết thành công!");
       onDelete(post._id);
     } catch (err) {
-      console.error("Lỗi khi xoá bài viết:", err);
+      toast.error("Không thể xoá bài viết.");
     }
   };
 
@@ -86,8 +88,7 @@ const Post: React.FC<{
       setReportReason("");
       setReportImages([]);
     } catch (err) {
-      console.error("Lỗi gửi báo cáo:", err);
-      alert("Không thể gửi báo cáo.");
+      toast.error("Không thể gửi báo cáo.");
     } finally {
       setIsReporting(false);
     }
